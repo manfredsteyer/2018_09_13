@@ -1,6 +1,11 @@
-import { from, Observable, Observer, fromEvent } from "rxjs";
-import { publish, map, debounceTime, switchMap } from "rxjs/operators";
+import { from, Observable, Observer, fromEvent, combineLatest } from "rxjs";
+//                                                  ^------ Factory-Functionen
+
+import { publish, map, debounceTime, switchMap, flatMap, delay, exhaustMap } from "rxjs/operators";
+//                                                                ^------- pipe
 import { Flight } from "./flight";
+
+// obs.pipe(combineLatest(obs2)) <==> combineLatest(obs, obs2)
 
 function find(from: string, to: string): Observable<Flight[]> {
     return Observable.create((sender: Observer<string>) => {
@@ -9,7 +14,8 @@ function find(from: string, to: string): Observable<Flight[]> {
             .then(text => sender.next(text))
             .catch(e => sender.error(e));
     }).pipe(
-        map( (txt: string) => JSON.parse(txt))
+        map( (txt: string) => JSON.parse(txt)),
+        // delay(5000)
     );
 }
 
@@ -25,13 +31,22 @@ function render(flights: Flight[]) {
     document.getElementById('output').innerHTML = html;
 }
 
-let input$ = fromEvent(document.getElementById('input'), 'input');
+let from$ = fromEvent(document.getElementById('from'), 'input')
+                .pipe(
+                    debounceTime(300),
+                    map( (e: any ) => e.target.value)
+                );
 
-let flights$ = input$
+let to$ = fromEvent(document.getElementById('to'), 'input')
+                .pipe(
+                    debounceTime(300),
+                    map( (e: any ) => e.target.value)
+                );
+
+let flights$ = combineLatest(from$, to$)
                     .pipe(
-                        debounceTime(300),
-                        map( (e: any ) => e.target.value),
-                        switchMap(v => find(v, ''))
+                        map(t => ({from: t[0], to: t[1]})),
+                        switchMap(p => find(p.from, p.to))
                     );
 
 let s = flights$.subscribe(
