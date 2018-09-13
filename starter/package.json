@@ -1,0 +1,30 @@
+{
+  "name": "starter",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "webpack-dev-server --open ",
+    "webpack": "webpack",
+    "tsc": "tsc"
+  },
+  "dependencies": {
+    "bootstrap": "^4.1.1",
+    "core-js": "^2.5.7",
+    "jquery": "^3.3.1",
+    "rxjs": "^6.2.1",
+    "ts-helpers": "^1.1.2",
+    "zone.js": "^0.8.26"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.3.2",
+    "@types/node": "^10.3.2",
+    "awesome-typescript-loader": "^5.0.0",
+    "file-loader": "^1.1.11",
+    "html-loader": "^0.5.5",
+    "raw-loader": "^0.5.1",
+    "typescript": "2.9.1",
+    "webpack": "^4.12.0",
+    "webpack-cli": "^3.0.4",
+    "webpack-dev-server": "^3.1.4"
+  }
+}
