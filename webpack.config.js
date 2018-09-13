@@ -1,4 +1,7 @@
 var webpack = require('webpack');
+var path = require('path');
+const { TsConfigPathsPlugin } = require('awesome-typescript-loader');
+
 
 module.exports = {
     devtool: 'source-map',
@@ -12,7 +15,12 @@ module.exports = {
         publicPath: "dist/"
     },
     resolve: {
-        extensions: ['.ts', '.js', '.jpg', '.jpeg', '.gif', '.png', '.css']
+        extensions: ['.ts', '.js', '.jpg', '.jpeg', '.gif', '.png', '.css'],
+        plugins: [
+            new TsConfigPathsPlugin({
+                tsconfig: path.resolve(__dirname, 'tsconfig.json'),
+             })
+        ]
     },
     module: {
         rules: [
@@ -22,8 +30,6 @@ module.exports = {
             { test: /\.ts$/, loaders: ['awesome-typescript-loader'], exclude: /node_modules/}
         ]
     },
-    plugins: [
-    ],
     node: {
         __filename: true
     },
