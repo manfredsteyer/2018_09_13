@@ -1,7 +1,8 @@
 import { sayHello } from "./hello";
 import { Flight } from "./flight";
 
-import './chat'; // used later
+// import './chat'; // used later
+import './flights';
 
 sayHello('World');
 

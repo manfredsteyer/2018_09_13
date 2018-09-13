@@ -1,4 +1,4 @@
-import { Observable, Observer, fromEvent } from 'rxjs';
+import { Observable, Observer, fromEvent, from } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 //                             ^--- Ab v 6 normal
 //                                  davor: Anti-Pattern
@@ -57,10 +57,10 @@ chat.messages$
         map(msg => `<b>${msg}</b>`)
     )
     .subscribe(
-    message => {
-        output.innerHTML += `<li>${message}</li>`;
-    }
-);
+        message => {
+            output.innerHTML += `<li>${message}</li>`;
+        }
+    );
 
 
 const input = document.getElementById("input") as HTMLInputElement;
