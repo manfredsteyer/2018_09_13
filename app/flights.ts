@@ -1,7 +1,7 @@
-import { from, Observable, Observer, fromEvent, combineLatest } from "rxjs";
+import { from, Observable, Observer, fromEvent, combineLatest, Subject, BehaviorSubject, ReplaySubject } from "rxjs";
 //                                                  ^------ Factory-Functionen
 
-import { publish, map, debounceTime, switchMap, flatMap, delay, exhaustMap } from "rxjs/operators";
+import { publish, map, debounceTime, switchMap, flatMap, delay, exhaustMap, share } from "rxjs/operators";
 //                                                                ^------- pipe
 import { Flight } from "./flight";
 
@@ -19,17 +19,10 @@ function find(from: string, to: string): Observable<Flight[]> {
     );
 }
 
-function render(flights: Flight[]) {
-    let html = '<table class="table table-striped">';
 
-    flights.forEach(f => {
-        html += `<tr><td>${f.id}</td><td>${f.from}</td><td>${f.to}</td><td>${f.date}</td></tr>`;
-    });
+// Quellen
 
-    html += '</table>';
-
-    document.getElementById('output').innerHTML = html;
-}
+let flightSelected$ = new BehaviorSubject<Flight>(null);
 
 let from$ = fromEvent(document.getElementById('from'), 'input')
                 .pipe(
@@ -46,13 +39,46 @@ let to$ = fromEvent(document.getElementById('to'), 'input')
 let flights$ = combineLatest(from$, to$)
                     .pipe(
                         map(t => ({from: t[0], to: t[1]})),
-                        switchMap(p => find(p.from, p.to))
+                        switchMap(p => find(p.from, p.to)),
+                        share()
                     );
 
-let s = flights$.subscribe(
+let count$ = flights$.pipe(map(flights => flights.length));
+
+flights$.subscribe(
     flights => render(flights),
     err => console.error('Fehler beim Laden', err)
 );
 
+count$.subscribe(
+    count => console.debug('count', count),
+    err => console.error('Fehler beim Laden', err)
+);
 
 
+const btnRegister = document.getElementById('btnRegister');
+fromEvent(btnRegister, 'click').subscribe(e => {
+    flightSelected$.subscribe(flight => {
+        console.debug('Flight selected', flight);
+    });
+});
+
+
+function render(flights: Flight[]) {
+    let html = '<table class="table table-striped">';
+
+    flights.forEach(f => {
+        html += `<tr><td><a id="f-${f.id}">Select</a></td><td>${f.id}</td><td>${f.from}</td><td>${f.to}</td><td>${f.date}</td></tr>`;
+    });
+
+    html += '</table>';
+
+    document.getElementById('output').innerHTML = html;
+
+    flights.forEach(f => {
+        const link = document.getElementById('f-' + f.id);
+        link.addEventListener('click', e => {
+            flightSelected$.next(f);
+        });
+    });
+}
