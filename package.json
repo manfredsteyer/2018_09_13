@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --open",
+    "build:lib": "tsc -p libs/flight-api -d",
     "webpack": "webpack",
     "tsc": "tsc"
   },
