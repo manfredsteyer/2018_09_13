@@ -5,6 +5,16 @@
     "moduleResolution": "node",
     "outDir": "dist",
     "sourceMap": true,
-    "lib": ["es6", "dom"]
+    "lib": ["es6", "dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@flights/flight-api": [
+        "libs/flight-api/src/public_api"
+        // "dist/libs/flight-api/src/public_api"
+        // "oebb/libs/flight-api/src/public_api",
+        // "db_schenker/libs/flight-api/src/public_api",
+        // "db/libs/flight-api/src/public_api"
+      ]
+    }
   }
 }

@@ -1,8 +1,11 @@
-import { from, Observable, Observer, fromEvent, combineLatest, Subject, BehaviorSubject, ReplaySubject } from "rxjs";
-import { publish, map, debounceTime, switchMap, flatMap, delay, exhaustMap, share } from "rxjs/operators";
-import { Flight } from "./flight";
+import { from, Observable, Observer, fromEvent, combineLatest, Subject, BehaviorSubject, ReplaySubject, Subscription } from "rxjs";
+import { publish, map, debounceTime, switchMap, flatMap, delay, exhaustMap, share, takeUntil } from "rxjs/operators";
+import { Flight } from "@flights/flight-api";
+import { find } from "@flights/flight-api";
 
 // Quellen
+
+const closeAll$ = new Subject<void>();
 
 const flightSelected$ = new BehaviorSubject<Flight>(null);
 
@@ -18,12 +21,17 @@ const to$ = fromEvent(document.getElementById('to'), 'input')
                     map( (e: any ) => e.target.value)
                 );
 
+
+const subs = new Array<Subscription>();
+
 const btnRegister = document.getElementById('btnRegister');
 fromEvent(btnRegister, 'click').subscribe(e => {
     
-    flightSelected$.subscribe(flight => {
+    flightSelected$.pipe(takeUntil(closeAll$)).subscribe(flight => {
         console.debug('Flight selected', flight);
     });
+
+    
 
 });
 
@@ -33,21 +41,28 @@ const flights$ = combineLatest(from$, to$)
                     .pipe(
                         map(t => ({from: t[0], to: t[1]})),
                         switchMap(p => find(p.from, p.to)),
-                        share()
+                        share(),
+                        takeUntil(closeAll$)
                     );
 
-const count$ = flights$.pipe(map(flights => flights.length));
+const count$ = flights$.pipe(
+                    map(flights => flights.length),
+                    takeUntil(closeAll$)
+                );
 
-flights$.subscribe(
+const s1 = flights$.subscribe(
     flights => render(flights),
     err => console.error('Fehler beim Laden', err)
 );
 
-count$.subscribe(
+const s2 = count$.subscribe(
     count => console.debug('count', count),
     err => console.error('Fehler beim Laden', err)
 );
 
+document.getElementById('btnClose').addEventListener('click', e => {
+    closeAll$.next();
+});
 
 // Hilfskonstrukte
 
@@ -71,14 +86,3 @@ function render(flights: Flight[]) {
 }
 
 
-function find(from: string, to: string): Observable<Flight[]> {
-    return Observable.create((sender: Observer<string>) => {
-        fetch(`http://www.angular.at/api/flight?from=${from}&to=${to}`)
-            .then(r => r.text())
-            .then(text => sender.next(text))
-            .catch(e => sender.error(e));
-    }).pipe(
-        map( (txt: string) => JSON.parse(txt)),
-        // delay(5000)
-    );
-}
